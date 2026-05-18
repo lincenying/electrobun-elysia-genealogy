@@ -1,4 +1,3 @@
-import { mkdir } from 'node:fs/promises'
 import { BrowserWindow } from 'electrobun'
 
 import { app } from '~/app'
@@ -7,9 +6,6 @@ import { isElectrobunAppBundle, resolveAppPath } from '~/utils/app-path'
 import { logger } from '~/utils/logger'
 
 (async () => {
-    const UPLOAD_DIR = resolveAppPath('uploads')
-    await mkdir(UPLOAD_DIR, { recursive: true })
-
     // 这个没什么用, 只是让开发环境时, 修改twig模板会重启进程
     if (process.env.NODE_ENV === 'development' && !isElectrobunAppBundle()) {
         const viewsDir = resolveAppPath('views')

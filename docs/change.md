@@ -123,7 +123,7 @@ fix: 启动时自动执行 Drizzle 迁移创建 genealogy 表
 
 ### 修复 Electrobun 打包后找不到 public / views（ENOENT）
 
-- 新增 `src/utils/app-path.ts`：通过 `Resources/app/config` 是否存在判断应用包环境，解析 `public`、`views`、`uploads` 路径
+- 新增 `src/utils/app-path.ts`：通过 `Resources/app/config` 是否存在判断应用包环境，解析 `public`、`views` 路径
 - 更新 `electrobun.config.ts`：复制 `public`、`views` 到 `Resources/app`
 - 新增 `public/robots.txt`、`public/favicon.ico`
 - 更新 `src/plugins/static.ts`、`src/index.ts`、`src/utils/index.ts`：使用 `resolveAppPath` 替代相对 cwd 路径
