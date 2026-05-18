@@ -1,7 +1,6 @@
 {
   "name": "electrobun-elysia-demo",
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "electrobun dev --watch",
     "start": "electrobun dev",
