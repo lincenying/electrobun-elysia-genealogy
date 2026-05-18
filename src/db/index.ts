@@ -1,15 +1,16 @@
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 import { Database } from 'bun:sqlite'
+import { count } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/bun-sqlite'
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
 import { Utils } from 'electrobun'
 import { config } from '~/config'
 import { isElectrobunAppBundle, resolveAppPath } from '~/utils/app-path'
-import * as schema from '../schema/bun-sqlite'
+import * as schema from './schema'
 
 /**
- * 读取 genealogy 表行数；表不存在时返回 0
+ * 读取 genealogy 表行数；表不存在时返回 0（使用 Drizzle，避免手写 SQL）
  */
 function getGenealogyRowCount(dbPath: string): number {
     if (!existsSync(dbPath)) {
@@ -18,10 +19,9 @@ function getGenealogyRowCount(dbPath: string): number {
 
     const sqlite = new Database(dbPath, { readonly: true })
     try {
-        const row = sqlite
-            .query('SELECT COUNT(*) AS count FROM genealogy')
-            .get() as { count: number } | null
-        return row?.count ?? 0
+        const readonlyDb = drizzle({ client: sqlite, schema })
+        const row = readonlyDb.select({ n: count() }).from(schema.genealogy).get()
+        return row?.n ?? 0
     }
     catch {
         return 0

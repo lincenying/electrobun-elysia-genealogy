@@ -1,16 +1,10 @@
 import { mkdir } from 'node:fs/promises'
-import { serverTiming } from '@elysiajs/server-timing'
 import { BrowserWindow } from 'electrobun'
 
-import { Elysia, file } from 'elysia'
+import { app } from '~/app'
 import { config } from '~/config'
 import { isElectrobunAppBundle, resolveAppPath } from '~/utils/app-path'
 import { logger } from '~/utils/logger'
-import { accessLoggerMiddleware } from './middleware/access-logger'
-import { createStaticConfig } from './plugins'
-import { genealogyApiRouter } from './routes/api/genealogy'
-// import { createSwaggerConfig } from './plugins/swagger'
-import { genealogyRouter } from './routes/genealogy'
 
 (async () => {
     const UPLOAD_DIR = resolveAppPath('uploads')
@@ -25,26 +19,6 @@ import { genealogyRouter } from './routes/genealogy'
         await Promise.all(files.map(file => import(`../views/${file}`)))
     }
 })()
-
-const app = new Elysia({
-    serve: {
-        maxRequestBodySize: 1024 * 1024 * 256, // 256MB
-    },
-})
-    .use(serverTiming())
-    .use(createStaticConfig())
-    .use(accessLoggerMiddleware)
-    .use(genealogyApiRouter)
-    .use(genealogyRouter)
-    .get('/favicon.ico', file(resolveAppPath('public', 'favicon.ico')))
-    .get('/robots.txt', file(resolveAppPath('public', 'robots.txt')))
-    .all('/sm/*', () => '')
-    .all('/*', () => 'Page Not Found')
-    // .all('/*', file('./dist/index.html'))
-
-if (process.env.NODE_ENV === 'development') {
-    // app.use(createSwaggerConfig())
-}
 
 app.listen(config.server.port)
 

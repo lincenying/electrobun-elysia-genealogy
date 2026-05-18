@@ -165,8 +165,8 @@ CREATE TABLE genealogy (
 );
 ```
 
-Schema 定义：`src/schema/bun-sqlite.ts`
-数据访问：`src/models/sqlite/genealogy.model.ts`
+Schema 定义：`src/db/schema/genealogy.schema.ts`（`drizzle.config` 指向 `src/db/schema/index.ts`）
+业务模块：`src/modules/genealogy/`（`*.controller.ts` / `*.service.ts` 等）
 
 ## 项目结构
 
@@ -178,15 +178,15 @@ Schema 定义：`src/schema/bun-sqlite.ts`
 ├── views/
 │   └── genealogy.twig         # 族谱页面（D3 可视化）
 ├── src/
-│   ├── index.ts               # 应用入口（Elysia + Electrobun 窗口）
+│   ├── index.ts               # 服务启动（监听端口、Electrobun 窗口）
+│   ├── app.ts                 # Elysia 应用组装
 │   ├── config/                # Convict 配置加载
-│   ├── controllers/           # 页面控制器
-│   ├── db/                    # Drizzle + SQLite 初始化与迁移
-│   ├── middleware/            # 访问日志、统一响应包装
-│   ├── models/                # 数据访问层
-│   ├── plugins/               # CORS、静态资源、Swagger 等
-│   ├── routes/                # 页面路由与 API 路由
-│   ├── schema/                # Drizzle 表定义、Elysia 校验 Schema
+│   ├── db/                    # Drizzle 实例、迁移
+│   │   ├── schema/            # 表定义与其它 ORM schema
+│   │   └── index.ts           # SQLite 连接与 migrate
+│   ├── modules/               # 业务模块（按功能拆分）
+│   │   └── genealogy/       # 族谱：controller / service / schema / types
+│   ├── plugins/               # Elysia 插件：CORS、静态资源、校验模型、访问日志、响应包装等
 │   └── utils/                 # 日志、路径解析、缓存等
 ├── scripts/                   # Electrobun 构建辅助脚本
 ├── electrobun.config.ts       # 桌面应用构建配置

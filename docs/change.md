@@ -1,3 +1,23 @@
+## 2026-05-18 17:43:18
+
+### 按 global-01-elysia 规范重组后端目录
+
+- Drizzle 表定义迁至 `src/db/schema/`（`drizzle.config.ts` 指向聚合 `index.ts`）
+- 数据库入口统一为 `src/db/index.ts`（原 `db/bun-sqlite.ts`）；行数统计改用 Drizzle `count()`，避免手写 SQL
+- 族谱业务迁至 `src/modules/genealogy/`（controller / service / schema / types）
+- 原 `middleware/`、`schema/` 中 Elysia 相关迁至 `src/plugins/`（`access-logger`、`response-wrapper`、`validation-schema`、`elysia-schema-error`）
+- 新增 `src/app.ts` 负责组装 Elysia；`src/index.ts` 仅负责启动与桌面窗口
+- 更新 `README.md` 中的目录说明
+
+### commit message
+
+```
+refactor: 按 Elysia 规范重组 db/modules/plugins 目录
+
+- Drizzle schema 归入 src/db/schema，业务迁入 modules/genealogy
+- 中间件与全局校验模型并入 plugins，抽取 app.ts
+```
+
 ## 2026-05-18 14:30:00
 
 ### 修复 macOS 打包应用启动崩溃（launcher SIGSEGV / EnvMap.copy）
