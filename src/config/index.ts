@@ -1,4 +1,3 @@
-/* eslint-disable node/prefer-global/process */
 /**
  * 配置管理
  *
@@ -6,9 +5,12 @@
  * 支持 JSON、YAML、TOML 格式的配置文件
  */
 
+import { join } from 'node:path'
 import convict from 'convict'
+
 import * as yaml from 'js-yaml'
 import * as toml from 'toml'
+import { getResourcesAppDir, isElectrobunAppBundle } from '~/utils/app-path'
 
 import { configSchema } from './schema'
 
@@ -26,16 +28,26 @@ const configInstance = convict(configSchema, {
 // 获取当前环境
 const nodeEnv = configInstance.get('server.nodeEnv')
 
+/** Electrobun 打包后配置文件在 Resources/app/config */
+function getConfigDir(): string {
+    if (isElectrobunAppBundle()) {
+        return join(getResourcesAppDir(), 'config')
+    }
+    return './config'
+}
+
+const configDir = getConfigDir()
+
 // 按优先级加载配置文件
 const configFiles = [
-    `./config/${nodeEnv}.json`,
-    `./config/${nodeEnv}.yaml`,
-    `./config/${nodeEnv}.yml`,
-    `./config/${nodeEnv}.toml`,
-    './config/default.json',
-    './config/default.yaml',
-    './config/default.yml',
-    './config/default.toml',
+    join(configDir, `${nodeEnv}.json`),
+    join(configDir, `${nodeEnv}.yaml`),
+    join(configDir, `${nodeEnv}.yml`),
+    join(configDir, `${nodeEnv}.toml`),
+    join(configDir, 'default.json'),
+    join(configDir, 'default.yaml'),
+    join(configDir, 'default.yml'),
+    join(configDir, 'default.toml'),
 ]
 
 // 尝试加载配置文件

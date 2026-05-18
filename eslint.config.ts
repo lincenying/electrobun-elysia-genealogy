@@ -5,6 +5,9 @@ const config = lincy({
     pnpm: false,
     overrides: {
         ignores: ['**/assets', '**/static'],
+        node: {
+            'node/prefer-global/process': 'off',
+        },
     },
 })
 

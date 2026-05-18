@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import process from 'node:process'
 import dayjs from 'dayjs'
+
+import { resolveAppPath } from './app-path'
 
 /**
  * 检查指定路径的文件或目录是否存在。
@@ -56,12 +57,12 @@ export function getNowTime(format: string = 'YYYY-MM-DD HH:mm:ss') {
     return dayjs().format(format)
 }
 
+export { getResourcesAppDir, isElectrobunAppBundle, resolveAppPath } from './app-path'
+
+/**
+ * 解析 Twig 模板绝对路径
+ */
 export function getTemplateDir(file: string) {
-    const templateRoot = process.cwd()
-    const fileDir = path.resolve(templateRoot, file)
-    console.log(fileDir)
-    if (fs.existsSync(fileDir)) {
-        return fileDir
-    }
-    return path.resolve(templateRoot, `../${file}`)
+    const relative = file.replace(/^\.\//, '')
+    return path.resolve(resolveAppPath(relative))
 }

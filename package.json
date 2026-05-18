@@ -3,9 +3,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "electrobun dev",
+    "dev": "electrobun dev --watch",
+    "start": "electrobun dev",
     "build": "electrobun build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "SQLITE_DB_URL=./.data/db.sqlite3 bunx drizzle-kit generate"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
@@ -19,7 +21,7 @@
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
-    "electrobun": "^1.16.0",
+    "electrobun": "1.18.4-beta.3",
     "elysia": "^1.4.28",
     "js-yaml": "^4.1.1",
     "lru-cache": "^11.3.3",
