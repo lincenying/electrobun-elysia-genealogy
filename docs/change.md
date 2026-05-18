@@ -1,3 +1,35 @@
+## 2026-05-18 21:35:00
+
+### 修复内置/种子 SQLite 已有表时 Drizzle 迁移报错
+
+- 根因：`migrate()` 在 `__drizzle_migrations` 为空时会执行 `0000_init_genealogy.sql`；用户数据目录中的库若由 `Resources/app/data/db.sqlite3` 复制而来且已有 `genealogy` 但未写入迁移记录，会触发 `table already exists`
+- `drizzle-sqlite/0000_init_genealogy.sql`：改为 `CREATE TABLE IF NOT EXISTS`，与已有种子库兼容，迁移仍可正常插入 journal
+
+### commit message
+
+```
+fix: 初始迁移对已有 genealogy 表使用 IF NOT EXISTS
+
+- 兼容 Electrobun 内置库种子到 userData 后补跑迁移的场景
+```
+
+## 2026-05-18 19:00:00
+
+### 修复 Windows 上 `electrobun dev --watch` 监视路径 ENOENT
+
+- 根因：`build.watch` 使用 `dir/**/*` 等形式时，Electrobun 会对字面路径 `dir\**` 调用 `fs.watch`，该路径在磁盘上不存在，在 Windows 上报 `ENOENT`
+- `electrobun.config.ts`：改为只监视真实目录根路径（`views`、`public`、`config`、`drizzle-sqlite`、`.data`、`src`）
+- `package.json`：新增 `predev`，在 `dev` 前创建 `.data`，避免克隆仓库后尚无该目录时监视失败
+
+### commit message
+
+```
+fix: 修复 Windows 上 electrobun --watch 对 .data/** 的 ENOENT
+
+- watch 改为目录根路径，避免 fs.watch 字面路径 **
+- predev 确保 .data 目录存在
+```
+
 ## 2026-05-18 17:43:18
 
 ### 按 global-01-elysia 规范重组后端目录

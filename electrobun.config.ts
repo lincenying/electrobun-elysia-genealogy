@@ -26,7 +26,7 @@ const config: ElectrobunConfig = {
         generatePatch: false,
     },
     build: {
-        targets: 'all',
+        targets: 'win-x64',
         mac: {
             // 有 Apple 开发者证书时设为 true，并 export ELECTROBUN_DEVELOPER_ID="Developer ID Application: ..."
             codesign: false,
@@ -47,14 +47,8 @@ const config: ElectrobunConfig = {
             icon: 'icon.iconset/icon_256x256.png',
         },
 
-        watch: [
-            'views/**/*.twig',
-            'public/**/*',
-            'config/**/*',
-            'drizzle-sqlite/**/*',
-            '.data/**/*',
-            'src/**/*.ts',
-        ],
+        // 勿使用 `dir/**/*`：Electrobun 在 Windows 上会对 `dir/**` 调用 fs.watch，路径不存在会 ENOENT
+        watch: ['views', 'public', 'config', 'drizzle-sqlite', '.data', 'src'],
     },
 }
 

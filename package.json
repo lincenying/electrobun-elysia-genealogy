@@ -2,6 +2,7 @@
   "name": "electrobun-elysia-demo",
   "type": "module",
   "scripts": {
+    "predev": "bun --eval \"import { mkdirSync } from 'node:fs'; mkdirSync('.data', { recursive: true })\"",
     "dev": "electrobun dev --watch",
     "start": "electrobun dev",
     "build": "electrobun build",
