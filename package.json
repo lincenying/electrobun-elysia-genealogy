@@ -6,6 +6,7 @@
     "dev": "electrobun dev --watch",
     "start": "electrobun dev",
     "build": "electrobun build",
+    "build:stable": "electrobun build --env=stable",
     "typecheck": "tsc --noEmit",
     "db:generate": "SQLITE_DB_URL=./.data/db.sqlite3 bunx drizzle-kit generate"
   },

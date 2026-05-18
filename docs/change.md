@@ -1,3 +1,70 @@
+## 2026-05-18 14:30:00
+
+### 修复 macOS 打包应用启动崩溃（launcher SIGSEGV / EnvMap.copy）
+
+- 根因：对 `Contents/MacOS/launcher` 或整包 `.app` 执行 `codesign` 会使 Zig launcher 在 `process.EnvMap.copy` 时段错误
+- 更新 `scripts/electrobun-macos-bundle.ts`：仅 ad-hoc 签名辅助二进制（bun、dylib 等），**禁止**签名 launcher 与整包
+- 构建后自动检测 launcher 签名状态，若被误签则 `codesign --remove-signature` 恢复
+
+### commit message
+
+```
+fix: 禁止签名 launcher，修复 macOS 应用启动 EnvMap.copy 崩溃
+
+- 仅签名 bun/dylib 等辅助二进制，launcher 保持未签名
+- 构建钩子自动检测并移除 launcher 误签
+```
+
+## 2026-05-18 14:05:00
+
+### 修复打包应用图标禁止符号、无法打开（未签名）
+
+- 新增 `scripts/electrobun-macos-bundle.ts`：postBuild（dev）/ postWrap（stable）自动 ad-hoc 签名
+- ~~签名顺序含 launcher~~（已废弃：签名 launcher 会导致启动崩溃）
+- stable 仅在 postWrap 签名自解压安装包（postBuild 时二进制尚未齐全）
+
+### commit message
+
+```
+fix: 本地构建自动 ad-hoc 签名，修复 macOS 未签名应用无法打开
+
+- dev/stable 构建钩子注入签名与中文 CFBundleDisplayName
+```
+
+## 2026-05-18 13:45:00
+
+### 修复 build:stable 因中文应用名导致 Bun.Archive 失败
+
+- `app.name` 改为 ASCII `TianJingYangCunZuPu`（Bun.Archive 不支持 tar 路径含中文，会报 `ArchiveHeaderError`）
+- 新增 `scripts/electrobun-post-build.ts`：postBuild 写入 `CFBundleDisplayName=天井洋村族谱`（Dock/Finder 仍显示中文）
+- `release.generatePatch: false`：本地无 `baseUrl` 时跳过增量 patch
+- 新增 `build:stable` 脚本；stable 产物：`artifacts/stable-macos-x64-*.dmg`、`.tar.zst`、`update.json`
+
+### commit message
+
+```
+fix: 修复 stable 构建 Bun.Archive 中文路径错误
+
+- app.name 使用 ASCII，postBuild 注入中文 CFBundleDisplayName
+- 本地 stable 构建禁用 generatePatch
+```
+
+## 2026-05-18 13:37:00
+
+### 修复 electrobun build 因图标集无效导致构建失败
+
+- 修复 `icon.iconset`：补全缺失的 `icon_32x32@2x.png`（64×64），将 `icon_512x512@2x.png` 调整为 1024×1024，并用 `sips` 统一各尺寸 PNG
+- 说明：`electrobun build` 默认 `--env=dev`，产物为 `build/dev-macos-x64/天井洋村族谱-dev.app`，不会生成 `artifacts/` 或 DMG（DMG 需 `--env=stable|canary`）
+
+### commit message
+
+```
+fix: 修复 macOS icon.iconset 无效导致 electrobun build 失败
+
+- 补全 icon_32x32@2x 并修正 1024 图标尺寸
+- dev 构建产物输出至 build/dev-macos-x64/*.app
+```
+
 ## 2026-05-18 12:05:00
 
 ### 修复 Electrobun 打包后族谱接口返回空数据
