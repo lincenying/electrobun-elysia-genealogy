@@ -5,3 +5,4 @@ data/
 .electrobun-cache/
 .DS_Store
 .cursor/rules/global*.mdc
+.data/
