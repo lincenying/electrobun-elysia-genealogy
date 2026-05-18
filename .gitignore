@@ -1,0 +1,7 @@
+node_modules/
+build/
+artifacts/
+data/
+.electrobun-cache/
+.DS_Store
+.cursor/rules/global*.mdc
