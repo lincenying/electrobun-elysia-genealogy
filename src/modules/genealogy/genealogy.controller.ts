@@ -24,3 +24,13 @@ export const genealogyApiRouter = new Elysia({ prefix: '/api/genealogy' })
     .use(validationSchema)
     .use(responseWrapperMiddleware)
     .get('/lists/', () => GenealogyService.getList())
+    .post('/', ({ body }) => GenealogyService.create(body), {
+        body: 'genealogy.insert',
+    })
+    .put('/:id', ({ params, body }) => GenealogyService.update(Number(params.id), body), {
+        params: 'genealogy.id',
+        body: 'genealogy.modify',
+    })
+    .delete('/:id', ({ params }) => GenealogyService.delete(Number(params.id)), {
+        params: 'genealogy.id',
+    })

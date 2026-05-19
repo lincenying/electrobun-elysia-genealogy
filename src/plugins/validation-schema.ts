@@ -1,5 +1,10 @@
 import { Elysia, t } from 'elysia'
 
+import {
+    genealogyIdParamsSchema,
+    genealogyInsertSchema,
+    genealogyModifySchema,
+} from '~/modules/genealogy/genealogy.schema'
 import { tt } from './elysia-schema-error'
 
 export const cookiesSchema = t.Partial(
@@ -174,4 +179,9 @@ export const validationSchema = new Elysia()
         'user.password': userPasswordSchema,
         // 修改用户信息
         'user.modify': userModifySchema,
+
+        // 族谱
+        'genealogy.id': genealogyIdParamsSchema,
+        'genealogy.insert': genealogyInsertSchema,
+        'genealogy.modify': genealogyModifySchema,
     })

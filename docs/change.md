@@ -1,3 +1,20 @@
+## 2026-05-19 12:00:00
+
+### 族谱成员增删改查管理
+
+- 后端：扩展 `GenealogyService` 与 `/api/genealogy` 的 POST、PUT `/:id`、DELETE `/:id`；校验父辈存在、防环、有子辈禁止删除
+- 校验：在 `genealogy.schema.ts` 定义 insert/modify/id 模型并注册到 `validation-schema.ts`
+- 前端：族谱页搜索栏「清空」旁增加「管理」按钮，右侧侧滑面板支持列表筛选、新增、编辑、删除；保存/删除后 `refreshTree` 同步刷新 D3 族谱树
+
+### commit message
+
+```
+feat: 族谱成员增删改查管理面板
+
+- 补齐族谱 REST API 与父子关系业务校验
+- 族谱页侧滑管理面板，操作后自动刷新关系图
+```
+
 ## 2026-05-18 21:35:00
 
 ### 修复内置/种子 SQLite 已有表时 Drizzle 迁移报错
