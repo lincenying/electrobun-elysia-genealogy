@@ -229,3 +229,70 @@ fix: 修复 Electrobun dev 打包失败与 SQLite 路径问题
 - 升级 electrobun 并添加路径别名打包插件
 - 修正打包环境下配置与数据库文件路径
 ```
+
+## 2026-05-19 22:45:00
+
+### 修复管理弹窗 overlay padding 不对称导致未居中
+
+- `.manage-overlay` 改用 `grid` + `place-items: center` 替代 flex，确保弹窗在 padding 区域内居中
+- `.manage-panel` 的 `max-height` 改为 `100%`（相对 overlay 内容区），避免 `100vh` 与 padding 重复计算导致底部 padding 被吃掉
+- 增加 `min-width: 0`，防止表格内容撑破宽度造成右侧 padding 不可见
+
+### commit message
+
+```
+fix: 修复族谱管理弹窗 overlay padding 不对称未居中
+
+- 改用 grid 居中并限制 panel 高度为 overlay 内容区 100%
+- 增加 min-width: 0 防止表格撑破水平布局
+```
+
+## 2026-05-19 23:10:00
+
+### 修复 Electrobun 首次打开管理弹窗布局偏移
+
+- 根因：WebView 初次布局时 `inset:0` / `max-height:100%` 可能未按真实窗口尺寸计算，resize 后才会重算
+- 新增 `syncManageOverlayLayout()`，用 `window.innerWidth/innerHeight`（及 `visualViewport`）写入 CSS 变量
+- overlay 与 panel 改用 `--manage-viewport-width/height` 计算宽高与 max 尺寸
+- 页面加载、打开弹窗（含双 rAF）、数据渲染后及 window/visualViewport resize 时同步
+
+### commit message
+
+```
+fix: 修复 Electrobun 首次打开管理弹窗布局未居中
+
+- JS 同步视口尺寸到 CSS 变量替代依赖 inset/百分比
+- 监听 resize 并在打开弹窗时双 rAF 强制重算布局
+```
+
+## 2026-05-19 23:35:00
+
+### 管理弹窗视口改用 clientHeight 排除标题栏影响
+
+- 说明：Electrobun 首次布局时 `visualViewport.height` / `innerHeight` 可能仍按外层窗口 frame 计算，含标题栏高度；实际 WebView 可视区更小，导致 overlay 超出底部/右侧
+- `syncManageOverlayLayout()` 改为优先使用 `document.documentElement.clientWidth/clientHeight`（页面真实布局视口）
+
+### commit message
+
+```
+fix: 管理弹窗视口改用 clientHeight 排除标题栏影响
+
+- 避免 Electrobun 首次布局用 visualViewport 含 chrome 导致 overlay 偏移
+```
+
+## 2026-05-19 23:55:00
+
+### 主进程 dom-ready 触发 resize 校正 WebView 视口
+
+- 实测 Electrobun 首次加载时 `inner/visual/client` 均为 frame 高度 1024，截图可视区仅 ~980（差值约标题栏），JS 无法测出该差值
+- `src/index.ts` 在 `dom-ready` 时 `setSize(w,h-1)` 再还原，等效手动 resize，使 WebView 布局视口与真实 client 区域一致
+- 移除前端 `syncManageOverlayLayout` 及 CSS 变量方案，overlay 恢复 `inset:0` + `max-height:100%`
+
+### commit message
+
+```
+fix: dom-ready 触发 resize 校正 Electrobun WebView 视口
+
+- 解决首次加载 innerHeight 含标题栏导致弹窗未居中
+- 移除无效的前端视口 CSS 变量同步逻辑
+```

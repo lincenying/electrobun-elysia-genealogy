@@ -22,14 +22,23 @@ app.listen(config.server.port)
 logger.info(`🚀 服务器运行在 http://${app.server?.hostname}:${app.server?.port}`)
 logger.info(`📋 API文档地址: http://${app.server?.hostname}:${app.server?.port}${config.swagger.path}`)
 
-// @ts-ignore 1234
-// eslint-disable-next-line ts/no-unused-vars
 const mainWindow = new BrowserWindow({
     title: '天井洋村族谱',
-    frame: { x: 20, y: 20, width: 1660, height: 1024 },
+    frame: { x: 10, y: 10, width: 1660, height: 1024 },
     url: `http://${app.server?.hostname}:${app.server?.port}/`,
 })
 
-// mainWindow.webview.on('dom-ready', () => {
-//     mainWindow.setFullScreen(true) // 页面渲染完成后全屏
-// })
+/**
+ * 刷新 WebView 布局视口
+ * Electrobun 首次加载时 innerHeight/clientHeight 可能等于外层 frame（含标题栏），
+ * 实际可视区更小；触发一次 resize 与手动改窗口尺寸效果相同
+ */
+function refreshWebviewLayout() {
+    const { width, height } = mainWindow.getSize()
+    mainWindow.setSize(width, height - 1)
+    setTimeout(() => mainWindow.setSize(width, height), 0)
+}
+
+mainWindow.webview.on('dom-ready', () => {
+    refreshWebviewLayout()
+})

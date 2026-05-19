@@ -86,22 +86,22 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.35);
       z-index: 2000;
-      align-items: center;
-      justify-content: center;
       padding: var(--manage-modal-gap);
       box-sizing: border-box;
       overflow: hidden;
     }
 
     .manage-overlay.open {
-      display: flex;
+      display: grid;
+      place-items: center;
     }
 
     .manage-panel {
       position: relative;
-      width: min(920px, 100%);
-      max-height: calc(100vh - 2 * var(--manage-modal-gap));
-      max-height: calc(100dvh - 2 * var(--manage-modal-gap));
+      width: 100%;
+      max-width: 920px;
+      max-height: 100%;
+      min-width: 0;
       min-height: 0;
       background: #fff;
       border-radius: 8px;
