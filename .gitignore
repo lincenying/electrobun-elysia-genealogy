@@ -6,3 +6,4 @@ data/
 .DS_Store
 .cursor/rules/global*.mdc
 .data/
+.qoder/rules/global*.mdc
