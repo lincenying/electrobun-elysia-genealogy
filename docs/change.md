@@ -1,3 +1,25 @@
+## 2026-06-16 17:30:00
+
+### 族谱父辈姓名（parent_name）与成员管理优化
+
+- 数据库：`genealogy` 表新增 `parent_name` 字段，用于冗余存储父辈姓名；新增迁移 `drizzle-sqlite/0001_add_parent_name.sql`
+- 启动流程：`src/db/index.ts` 迁移后幂等执行 `ensureParentNameColumn()` 与 `backfillParentNames()`，兼容脚本直改库、journal 未同步等场景
+- 迁移修复：`0001` 不再执行 `ALTER TABLE`（改为占位 `SELECT 1`），避免列已存在时 `duplicate column name: parent_name` 导致启动失败
+- 数据修复：新增 `scripts/backfill-parent-name.ts`；`package.json` 增加 `db:backfill-parent-name`、`db:backfill-parent-name:user-data`
+- 业务：`GenealogyService` 新增/修改时自动写入 `parent_name`；修改成员姓名时同步更新子辈的 `parent_name`
+- 开发环境数据库路径：Electrobun dev 改用 `Resources/app/data/db.sqlite3`（与项目 `.data` 构建同步），不再读陈旧的 userData 库，修复 `/api/genealogy/lists/` 返回 `parent_name` 全为 `null` 的问题
+- 前端：`views/genealogy.twig` 管理列表「父辈」列与下拉框改为显示姓名；筛选支持按父辈姓名搜索；每行新增「新增子辈」按钮，点击后以该成员为父辈打开新增表单
+
+### commit message
+
+```
+feat: 族谱 parent_name 字段与成员管理父辈姓名展示
+
+- 新增 parent_name 列、迁移与回填脚本，启动时幂等补列与回填
+- 修复 dev 读 userData 旧库导致 API parent_name 为 null
+- 管理面板父辈显示姓名，支持以当前成员为父新增子辈
+```
+
 ## 2026-05-19 15:00:00
 
 ### 限制管理弹窗最大高度与上下间距

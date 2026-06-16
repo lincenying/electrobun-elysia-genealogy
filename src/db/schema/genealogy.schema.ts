@@ -6,6 +6,7 @@ export const genealogy = sqliteTable('genealogy', {
     id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull(),
     parent: integer('parent').notNull(),
+    parent_name: text('parent_name'),
     sex: text('sex'),
     desc: text('desc'),
 })

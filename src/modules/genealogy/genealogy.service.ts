@@ -1,11 +1,11 @@
+import type { IGenealogyInsert, IGenealogyModify } from './genealogy.schema'
 import { asc, count, eq } from 'drizzle-orm'
-import Twig from 'twig'
 
+import Twig from 'twig'
 import { db } from '~/db'
 import { genealogy } from '~/db/schema'
 import { ApiError } from '~/plugins/response-wrapper'
 import { getErrorMessage, getTemplateDir } from '~/utils'
-import type { IGenealogyInsert, IGenealogyModify } from './genealogy.schema'
 
 /**
  * 族谱业务：数据查询、增删改与页面模板渲染
@@ -48,9 +48,11 @@ export class GenealogyService {
     public static async create(data: IGenealogyInsert) {
         try {
             await GenealogyService.validateParent(undefined, data.parent)
+            const parentName = await GenealogyService.resolveParentName(data.parent)
             const [row] = await db.insert(genealogy).values({
                 name: data.name,
                 parent: data.parent,
+                parent_name: parentName,
                 sex: data.sex ?? null,
                 desc: data.desc ?? null,
             }).returning()
@@ -80,12 +82,21 @@ export class GenealogyService {
                 await GenealogyService.validateParent(id, nextParent)
             }
 
+            const nextParentName = data.parent !== undefined ? await GenealogyService.resolveParentName(nextParent) : undefined
+
             const [row] = await db.update(genealogy).set({
                 ...(data.name !== undefined ? { name: data.name } : {}),
                 ...(data.parent !== undefined ? { parent: data.parent } : {}),
+                ...(nextParentName !== undefined ? { parent_name: nextParentName } : {}),
                 ...(data.sex !== undefined ? { sex: data.sex } : {}),
                 ...(data.desc !== undefined ? { desc: data.desc } : {}),
             }).where(eq(genealogy.id, id)).returning()
+
+            if (data.name !== undefined && data.name !== existing.name) {
+                await db.update(genealogy)
+                    .set({ parent_name: data.name })
+                    .where(eq(genealogy.parent, id))
+            }
 
             return row
         }
@@ -123,6 +134,23 @@ export class GenealogyService {
             }
             throw new ApiError(-200, getErrorMessage(err))
         }
+    }
+
+    /**
+     * 根据父辈 id 解析父辈姓名
+     */
+    private static async resolveParentName(parentId: number): Promise<string | null> {
+        if (parentId === 0) {
+            return null
+        }
+
+        const parentRow = await db
+            .select({ name: genealogy.name })
+            .from(genealogy)
+            .where(eq(genealogy.id, parentId))
+            .get()
+
+        return parentRow?.name ?? null
     }
 
     /**

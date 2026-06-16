@@ -51,6 +51,32 @@ function seedUserDatabaseFromBundle(userDbPath: string, bundledDbPath: string): 
 }
 
 /**
+ * 确保 parent_name 列存在（兼容脚本直改库、迁移 journal 未同步等场景）
+ */
+function ensureParentNameColumn(): void {
+    const columns = sqlite.prepare('PRAGMA table_info(genealogy)').all() as { name: string }[]
+    if (columns.length === 0) {
+        return
+    }
+    if (!columns.some(column => column.name === 'parent_name')) {
+        sqlite.exec('ALTER TABLE genealogy ADD COLUMN parent_name text')
+    }
+}
+
+/**
+ * 根据 parent 字段回填 parent_name（幂等，迁移后或历史库均可执行）
+ */
+function backfillParentNames(): void {
+    sqlite.exec(`
+        UPDATE genealogy
+        SET parent_name = (
+            SELECT name FROM genealogy AS p WHERE p.id = genealogy.parent
+        )
+        WHERE parent != 0
+    `)
+}
+
+/**
  * 解析 SQLite 路径：开发环境用项目 .data；Electrobun 打包后从内置库种子到 userData
  */
 function resolveSqlitePath(dbPath: string): string {
@@ -59,6 +85,13 @@ function resolveSqlitePath(dbPath: string): string {
     }
 
     if (isElectrobunAppBundle()) {
+        // dev 包内直接用 Resources/app/data，与项目 .data 构建同步，避免 userData 旧库
+        if (config.server.nodeEnv === 'development') {
+            const devDbPath = resolveAppPath('data', 'db.sqlite3')
+            mkdirSync(join(devDbPath, '..'), { recursive: true })
+            return devDbPath
+        }
+
         const dataDir = join(Utils.paths.userData, 'data')
         mkdirSync(dataDir, { recursive: true })
         const userDbPath = join(dataDir, 'db.sqlite3')
@@ -81,6 +114,8 @@ export const db = drizzle({ client: sqlite, schema })
  */
 function runMigrations(): void {
     migrate(db, { migrationsFolder: resolveAppPath('drizzle-sqlite') })
+    ensureParentNameColumn()
+    backfillParentNames()
 }
 
 runMigrations()

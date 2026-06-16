@@ -99,7 +99,7 @@
     .manage-panel {
       position: relative;
       width: 100%;
-      max-width: 920px;
+      max-width: 1280px;
       max-height: 100%;
       min-width: 0;
       min-height: 0;
@@ -465,11 +465,11 @@
         <thead>
           <tr>
             <th style="width: 70px;">ID</th>
-            <th style="width: 70px;">姓名</th>
-            <th style="width: 70px;">父辈</th>
+            <th style="width: 100px;">姓名</th>
+            <th style="width: 100px;">父辈</th>
             <th style="width: 70px;">性别</th>
             <th>简介</th>
-            <th style="width: 120px;">操作</th>
+            <th style="width: 200px;">操作</th>
           </tr>
         </thead>
         <tbody id="manageTableBody"></tbody>
@@ -825,17 +825,20 @@
       const tbody = document.getElementById('manageTableBody');
       const rows = manageListData.filter(item => {
         if (!keyword) return true;
-        return item.name.toLowerCase().includes(keyword) || String(item.id).includes(keyword);
+        return item.name.toLowerCase().includes(keyword)
+          || String(item.id).includes(keyword)
+          || (item.parent_name || '').toLowerCase().includes(keyword);
       });
       tbody.innerHTML = rows.map(item => `
         <tr>
           <td>${item.id}</td>
           <td>${escapeHtml(item.name)}</td>
-          <td>${item.parent}</td>
+          <td>${escapeHtml(item.parent === 0 ? '始祖' : (item.parent_name || '-'))}</td>
           <td>${item.sex ?? '-'}</td>
           <td class="desc-cell" title="${escapeHtml(item.desc || '')}">${escapeHtml(item.desc || '-')}</td>
           <td class="manage-actions">
             <button type="button" onclick="openManageForm('edit', ${item.id})">编辑</button>
+            <button type="button" onclick="openManageForm('create', null, ${item.id})">新增子辈</button>
             <button type="button" class="btn-del" onclick="deleteManageRecord(${item.id})">删除</button>
           </td>
         </tr>
@@ -854,20 +857,19 @@
     function fillParentSelect(excludeId) {
       const select = document.getElementById('formParent');
       const current = select.value;
-      let html = '<option value="0">0 - 始祖（无父辈）</option>';
+      let html = '<option value="0">始祖（无父辈）</option>';
       manageListData.forEach(item => {
         if (excludeId !== undefined && item.id === excludeId) return;
-        html += `<option value="${item.id}">${item.id} - ${escapeHtml(item.name)}</option>`;
+        html += `<option value="${item.id}">${escapeHtml(item.name)}</option>`;
       });
       select.innerHTML = html;
       if (current) select.value = current;
     }
 
-    function openManageForm(mode, id) {
+    function openManageForm(mode, id, parentId) {
       manageFormMode = mode;
       const form = document.getElementById('manageForm');
       form.style.display = 'block';
-      document.getElementById('manageFormTitle').innerText = mode === 'create' ? '新增成员' : '编辑成员';
 
       if (mode === 'create') {
         document.getElementById('formId').value = '';
@@ -875,8 +877,18 @@
         document.getElementById('formSex').value = '';
         document.getElementById('formDesc').value = '';
         fillParentSelect();
-        document.getElementById('formParent').value = '0';
+        const presetParent = parentId != null ? String(parentId) : '0';
+        document.getElementById('formParent').value = presetParent;
+        if (parentId != null) {
+          const parentItem = manageListData.find(r => r.id === parentId);
+          document.getElementById('manageFormTitle').innerText = parentItem
+            ? `新增成员（父辈：${parentItem.name}）`
+            : '新增成员';
+        } else {
+          document.getElementById('manageFormTitle').innerText = '新增成员';
+        }
       } else {
+        document.getElementById('manageFormTitle').innerText = '编辑成员';
         const item = manageListData.find(r => r.id === id);
         if (!item) return;
         document.getElementById('formId').value = item.id;
